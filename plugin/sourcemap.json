@@ -1,0 +1,231 @@
+{
+  "name": "Game",
+  "className": "DataModel",
+  "children": [
+    {
+      "name": "SoundService",
+      "className": "SoundService"
+    },
+    {
+      "name": "ReplicatedFirst",
+      "className": "ReplicatedFirst"
+    },
+    {
+      "name": "StarterPlayer",
+      "className": "StarterPlayer",
+      "children": [
+        {
+          "name": "StarterPlayerScripts",
+          "className": "StarterPlayerScripts"
+        },
+        {
+          "name": "StarterCharacterScripts",
+          "className": "StarterCharacterScripts"
+        }
+      ]
+    },
+    {
+      "name": "StarterPack",
+      "className": "StarterPack"
+    },
+    {
+      "name": "ReplicatedStorage",
+      "className": "ReplicatedStorage"
+    },
+    {
+      "name": "ServerScriptService",
+      "className": "ServerScriptService"
+    },
+    {
+      "name": "ServerStorage",
+      "className": "ServerStorage",
+      "children": [
+        {
+          "name": "Plugin",
+          "className": "Folder",
+          "children": [
+            {
+              "name": "WebSocketClient",
+              "className": "ModuleScript",
+              "filePaths": [
+                "src/ServerStorage/Plugin/WebSocketClient.luau"
+              ]
+            },
+            {
+              "name": "RblxExplorer",
+              "className": "Script",
+              "filePaths": [
+                "src/ServerStorage/Plugin/RblxExplorer.server.luau"
+              ]
+            },
+            {
+              "name": "Packages",
+              "className": "Folder",
+              "children": [
+                {
+                  "name": "Promise",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Packages/Promise.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "SerializeDatamodel",
+              "className": "ModuleScript",
+              "filePaths": [
+                "src/ServerStorage/Plugin/SerializeDatamodel.luau"
+              ]
+            },
+            {
+              "name": "Utils",
+              "className": "Folder",
+              "children": [
+                {
+                  "name": "print",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Utils/print.luau"
+                  ]
+                },
+                {
+                  "name": "error",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Utils/error.luau"
+                  ]
+                },
+                {
+                  "name": "name",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Utils/name.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Operations",
+              "className": "Folder",
+              "children": [
+                {
+                  "name": "move_node",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/move_node.luau"
+                  ]
+                },
+                {
+                  "name": "rename_instance",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/rename_instance.luau"
+                  ]
+                },
+                {
+                  "name": "delete_instance",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/delete_instance.luau"
+                  ]
+                },
+                {
+                  "name": "copy_instance",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/copy_instance.luau"
+                  ]
+                },
+                {
+                  "name": "paste_instance",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/paste_instance.luau"
+                  ]
+                },
+                {
+                  "name": "duplicate_instance",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/duplicate_instance.luau"
+                  ]
+                },
+                {
+                  "name": "create_instance",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Operations/create_instance.luau"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Shared",
+              "className": "Folder",
+              "children": [
+                {
+                  "name": "InstanceMap",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Shared/InstanceMap.luau"
+                  ]
+                },
+                {
+                  "name": "Services",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Shared/Services.luau"
+                  ]
+                },
+                {
+                  "name": "Clipboard",
+                  "className": "ModuleScript",
+                  "filePaths": [
+                    "src/ServerStorage/Plugin/Shared/Clipboard.luau"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lighting",
+      "className": "Lighting",
+      "children": [
+        {
+          "name": "Sky",
+          "className": "Sky"
+        },
+        {
+          "name": "SunRays",
+          "className": "SunRaysEffect"
+        },
+        {
+          "name": "Atmosphere",
+          "className": "Atmosphere"
+        },
+        {
+          "name": "Bloom",
+          "className": "BloomEffect"
+        },
+        {
+          "name": "DepthOfField",
+          "className": "DepthOfFieldEffect"
+        }
+      ]
+    },
+    {
+      "name": "Workspace",
+      "className": "Workspace",
+      "children": [
+        {
+          "name": "Camera",
+          "className": "Camera"
+        }
+      ]
+    }
+  ]
+}
