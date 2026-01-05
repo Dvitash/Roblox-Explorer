@@ -4,6 +4,8 @@
   "displayName": "Verde",
   "description": "A VS Code extension for exploring and editing Roblox game instances",
   "version": "0.0.1",
+  "license": "MIT",
+  "repository": "https://github.com/dvitash/verde",
   "icon": "logo.png",
   "engines": {
     "vscode": "^1.74.0"
@@ -110,7 +112,7 @@
         "when": "focusedView == verde.view"
       },
       {
-        "command": "verde.openScript",
+        "command": "verde.renameInstance",
         "key": "enter",
         "when": "focusedView == verde.view"
       }

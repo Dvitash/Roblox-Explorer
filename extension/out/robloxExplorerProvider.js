@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RobloxExplorerProvider = void 0;
 const vscode = __importStar(require("vscode"));
+const instanceSorter_1 = require("./instanceSorter");
 class RobloxExplorerDragAndDropController {
     provider;
     dropMimeTypes = ["application/vnd.code.tree.robloxexplorer"];
@@ -99,8 +100,10 @@ class RobloxExplorerProvider {
     nodesById = new Map();
     rootIds = [];
     backend = null;
+    sorter;
     constructor(extensionUri) {
         this.extensionUri = extensionUri;
+        this.sorter = new instanceSorter_1.InstanceSorter();
     }
     setBackend(backend) {
         this.backend = backend;
@@ -154,79 +157,13 @@ class RobloxExplorerProvider {
                 .map((childId) => this.nodesById.get(childId))
                 .filter((node) => node !== undefined);
         }
-        return nodes.sort((a, b) => {
-            const aServiceOrder = this.getServiceOrder(a.className);
-            const bServiceOrder = this.getServiceOrder(b.className);
-            const aIsService = aServiceOrder !== -1;
-            const bIsService = bServiceOrder !== -1;
-            const aIsSpecial = a.className === "Camera" || a.className === "Terrain";
-            const bIsSpecial = b.className === "Camera" || b.className === "Terrain";
-            const aIsFolder = a.className === "Folder";
-            const bIsFolder = b.className === "Folder";
-            if (aIsService && bIsService) {
-                return aServiceOrder - bServiceOrder;
-            }
-            if (aIsService && !bIsService) {
-                return -1;
-            }
-            if (!aIsService && bIsService) {
-                return 1;
-            }
-            if (aIsSpecial && bIsSpecial) {
-                if (a.className === "Camera") {
-                    return -1;
-                }
-                if (b.className === "Camera") {
-                    return 1;
-                }
-                return 0;
-            }
-            if (aIsSpecial && !bIsSpecial) {
-                return -1;
-            }
-            if (!aIsSpecial && bIsSpecial) {
-                return 1;
-            }
-            // Folders third, alphabetically
-            if (aIsFolder && !bIsFolder) {
-                return -1;
-            }
-            if (!aIsFolder && bIsFolder) {
-                return 1;
-            }
-            // Everything else alphabetically
-            return a.name.localeCompare(b.name);
-        });
+        return this.sorter.sortNodes(nodes);
     }
     getIconForClassName(className) {
         return vscode.Uri.joinPath(this.extensionUri, "media", `${className}@3x.png`);
     }
     isScriptClass(className) {
         return className === "Script" || className === "LocalScript" || className === "ModuleScript";
-    }
-    getServiceOrder(className) {
-        const serviceOrder = [
-            "Workspace",
-            "Players",
-            "Lighting",
-            "MaterialService",
-            "ReplicatedFirst",
-            "ReplicatedStorage",
-            "ServerScriptService",
-            "ServerStorage",
-            "StarterGui",
-            "StarterPack",
-            "StarterPlayer",
-            "Teams",
-            "SoundService",
-            "TextChatService",
-            "TestService",
-            "LocalizationService",
-            "VoiceChatService",
-            "VRService"
-        ];
-        const index = serviceOrder.indexOf(className);
-        return index === -1 ? -1 : index;
     }
 }
 exports.RobloxExplorerProvider = RobloxExplorerProvider;
