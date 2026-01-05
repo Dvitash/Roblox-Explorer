@@ -1,5 +1,6 @@
 {
   "name": "rblxexplorer",
+  "publisher": "Dvitash",
   "displayName": "RblxExplorer",
   "description": "description",
   "version": "0.0.1",
@@ -12,6 +13,21 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "RblxExplorer",
+      "properties": {
+        "rblxexplorer.sourcemapPaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "plugin/sourcemap.json"
+          ],
+          "description": "Path to sourcemap file"
+        }
+      }
+    },
     "viewsContainers": {
       "activitybar": [
         {
@@ -57,6 +73,10 @@
       {
         "command": "rblxexplorer.addInstance",
         "title": "Add Child..."
+      },
+      {
+        "command": "rblxexplorer.openScript",
+        "title": "Open Script"
       }
     ],
     "keybindings": [
@@ -147,15 +167,18 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "@types/vscode": "^1.107.0",
+    "@types/vscode": "^1.74.0",
     "@types/ws": "^8.18.1",
     "@vscode/test-cli": "^0.0.12",
     "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.7.1",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.1"

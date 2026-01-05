@@ -55,13 +55,28 @@ class RblxExplorerBackend {
     }
     async start() {
         if (this.webSocketServer) {
-            return;
+            const addressInfo = this.webSocketServer.address();
+            if (addressInfo) {
+                this.log(`websocket server already running on ${JSON.stringify(addressInfo)}`);
+                return;
+            }
+            await this.stop();
         }
         const config = vscode.workspace.getConfiguration("rblxexplorer");
         const port = config.get("port", 9000);
-        const host = config.get("host", "127.0.0.1");
-        this.log(`starting websocket server on ws://${host}:${port}`);
-        this.webSocketServer = new ws_1.WebSocketServer({ host, port });
+        const hostSetting = (config.get("host", "") || "").trim();
+        const host = hostSetting.length > 0 ? hostSetting : undefined;
+        this.log(`starting websocket server on ws://${host ?? "0.0.0.0"}:${port}`);
+        try {
+            this.webSocketServer = new ws_1.WebSocketServer(host ? { host, port } : { port });
+        }
+        catch (err) {
+            this.log(`failed to start websocket server: ${String(err)}`);
+            throw err;
+        }
+        this.webSocketServer.on("listening", () => {
+            this.log("websocket server listening");
+        });
         this.webSocketServer.on("connection", (socket) => {
             this.clients.add(socket);
             this.log(`client connected (${this.clients.size} total)`);
@@ -75,9 +90,16 @@ class RblxExplorerBackend {
             socket.on("error", (err) => {
                 this.log(`socket error: ${String(err)}`);
             });
+            this.send(socket, { type: "ack" });
+            this.lastAckTime = Date.now();
+            this.resetAckTimeout();
+            this.requestSnapshot();
         });
         this.webSocketServer.on("error", (err) => {
             this.log(`server error: ${String(err)}`);
+            if (err?.code === "EADDRINUSE") {
+                this.webSocketServer = null;
+            }
         });
     }
     async stop() {
@@ -126,6 +148,19 @@ class RblxExplorerBackend {
             }, 30000);
         });
     }
+    async getProperties(nodeId) {
+        const result = await this.sendOperation({ type: "get_properties", nodeId });
+        if (result.success && Array.isArray(result.data)) {
+            return result.data;
+        }
+        throw new Error(result.success ? "No data returned" : result.error);
+    }
+    async setProperty(nodeId, propertyName, propertyValue) {
+        const result = await this.sendOperation({ type: "set_property", nodeId, propertyName, propertyValue });
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+    }
     onMessage(socket, rawData) {
         const text = rawData.toString();
         let message;
@@ -171,6 +206,7 @@ class RblxExplorerBackend {
             case "ack": {
                 this.lastAckTime = Date.now();
                 this.resetAckTimeout();
+                this.send(socket, { type: "ack" });
                 return;
             }
             default: {

@@ -9,11 +9,31 @@ export type Operation =
     | { type: "delete_instance"; nodeId: string }
     | { type: "copy_instance"; nodeIds: string[] }
     | { type: "paste_instance"; targetNodeId: string | null }
-    | { type: "create_instance"; parentId: string; className: string };
+    | { type: "create_instance"; parentId: string; className: string }
+    | { type: "get_properties"; nodeId: string }
+    | { type: "set_property"; nodeId: string; propertyName: string; propertyValue: any }
 
 export type OperationResult =
-    | { success: true; data?: string }
+    | { success: true; data?: string | PropertyInfo[] }
     | { success: false; error: string };
+
+export type PropertyInfo = {
+    name: string;
+    type: string;
+    value: any;
+    category: string;
+    isEnum?: boolean;
+    enumValues?: { name: string; value: number }[];
+    isInstanceReference?: boolean;
+    referencedInstanceId?: string;
+    referencedInstanceName?: string;
+    referencedInstanceClass?: string;
+};
+
+export type TextRange = {
+    start: { line: number; character: number };
+    end: { line: number; character: number };
+};
 
 type RobloxInboundMessage =
     | { type: "explorer_snapshot"; requestId?: string; payload?: Snapshot }
@@ -44,7 +64,7 @@ export class RblxExplorerBackend {
         outputChannel: vscode.OutputChannel,
         statusBarItem: vscode.StatusBarItem,
         onSnapshotReceived: (snapshot: Snapshot) => void,
-        onConnectionLost?: () => void
+        onConnectionLost?: () => void,
     ) {
         this.outputChannel = outputChannel;
         this.statusBarItem = statusBarItem;
@@ -55,16 +75,32 @@ export class RblxExplorerBackend {
 
     public async start(): Promise<void> {
         if (this.webSocketServer) {
-            return;
+            const addressInfo = this.webSocketServer.address();
+            if (addressInfo) {
+                this.log(`websocket server already running on ${JSON.stringify(addressInfo)}`);
+                return;
+            }
+
+            await this.stop();
         }
 
         const config = vscode.workspace.getConfiguration("rblxexplorer");
         const port = config.get<number>("port", 9000);
-        const host = config.get<string>("host", "127.0.0.1");
+        const hostSetting = (config.get<string>("host", "") || "").trim();
+        const host = hostSetting.length > 0 ? hostSetting : undefined;
 
-        this.log(`starting websocket server on ws://${host}:${port}`);
+        this.log(`starting websocket server on ws://${host ?? "0.0.0.0"}:${port}`);
 
-        this.webSocketServer = new WebSocketServer({ host, port });
+        try {
+            this.webSocketServer = new WebSocketServer(host ? { host, port } : { port });
+        } catch (err) {
+            this.log(`failed to start websocket server: ${String(err)}`);
+            throw err;
+        }
+
+        this.webSocketServer.on("listening", () => {
+            this.log("websocket server listening");
+        });
 
         this.webSocketServer.on("connection", (socket) => {
             this.clients.add(socket);
@@ -80,10 +116,19 @@ export class RblxExplorerBackend {
             socket.on("error", (err) => {
                 this.log(`socket error: ${String(err)}`);
             });
+
+            this.send(socket, { type: "ack" });
+            this.lastAckTime = Date.now();
+            this.resetAckTimeout();
+
+            this.requestSnapshot();
         });
 
         this.webSocketServer.on("error", (err) => {
             this.log(`server error: ${String(err)}`);
+            if ((err as any)?.code === "EADDRINUSE") {
+                this.webSocketServer = null;
+            }
         });
     }
 
@@ -142,6 +187,21 @@ export class RblxExplorerBackend {
         });
     }
 
+    public async getProperties(nodeId: string): Promise<PropertyInfo[]> {
+        const result = await this.sendOperation({ type: "get_properties", nodeId });
+        if (result.success && Array.isArray(result.data)) {
+            return result.data as PropertyInfo[];
+        }
+        throw new Error(result.success ? "No data returned" : result.error);
+    }
+
+    public async setProperty(nodeId: string, propertyName: string, propertyValue: any): Promise<void> {
+        const result = await this.sendOperation({ type: "set_property", nodeId, propertyName, propertyValue });
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+    }
+
     private onMessage(socket: WebSocket, rawData: RawData): void {
         const text = rawData.toString();
 
@@ -198,6 +258,7 @@ export class RblxExplorerBackend {
             case "ack": {
                 this.lastAckTime = Date.now();
                 this.resetAckTimeout();
+                this.send(socket, { type: "ack" });
                 return;
             }
 

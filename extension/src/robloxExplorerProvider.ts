@@ -32,7 +32,7 @@ class RobloxExplorerDragAndDropController implements vscode.TreeDragAndDropContr
 
 		const sourceNodes = transferItem.value as Node[];
 		if (sourceNodes.length !== 1) {
-			return; // Only support single node moves for now
+			return;
 		}
 
 		const sourceNode = sourceNodes[0];
@@ -95,15 +95,15 @@ export class RobloxExplorerProvider implements vscode.TreeDataProvider<Node> {
 		this.backend = backend;
 	}
 
+	public getNodeById(id: string): Node | undefined {
+		return this.nodesById.get(id);
+	}
+
 	public async performOperation(operation: Operation) {
 		if (!this.backend) {
 			throw new Error("Backend not set");
 		}
 		return this.backend.sendOperation(operation);
-	}
-
-	public getNodeById(id: string): Node | undefined {
-		return this.nodesById.get(id);
 	}
 
 	public getDragAndDropController(): vscode.TreeDragAndDropController<Node> {
@@ -136,6 +136,14 @@ export class RobloxExplorerProvider implements vscode.TreeDataProvider<Node> {
 
 		treeItem.iconPath = this.getIconForClassName(element.className);
 
+		if (this.isScriptClass(element.className)) {
+			treeItem.command = {
+				command: 'rblxexplorer.openScript',
+				arguments: [element],
+				title: 'Open Script'
+			};
+		}
+
 		return treeItem;
 	}
 
@@ -157,5 +165,9 @@ export class RobloxExplorerProvider implements vscode.TreeDataProvider<Node> {
 			"media",
 			`${className}@3x.png`
 		);
+	}
+
+	private isScriptClass(className: string): boolean {
+		return className === "Script" || className === "LocalScript" || className === "ModuleScript";
 	}
 }

@@ -1,71 +1,71 @@
-# rblxexplorer README
+# RblxExplorer
 
-This is the README for your extension "rblxexplorer". After writing up a brief description, we recommend including the following sections.
+A VS Code extension that provides a tree view explorer for Roblox Studio instances
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
-
-For example if there is an image subfolder under your extension project workspace:
-
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **Live Instance Tree**: View your Roblox game's instance hierarchy in VS Code
+- **Script Opening**: Double-click scripts to open them in VS Code (works with Rojo/Argon/Azul sourcemaps)
+- **Instance Operations**: Rename, duplicate, delete, copy, and paste instances
+- **Properties Panel**: View and edit instance properties right from VS Code
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- Roblox Studio with the RblxExplorer plugin installed
+- A Rojo or Azul setup with sourcemap generation (for script opening functionality)
+
+## Installation
+
+### From VSIX (Local Testing)
+1. Run `npm run package` in the extension directory to create a `.vsix` file
+2. In VS Code, open the Extensions view and click the "..." menu
+3. Select "Install from VSIX..." and choose the generated `.vsix` file
+
+### From Marketplace (Coming Soon)
+Once published, install from the VS Code marketplace.
+
+## Setup
+
+1. Install the RblxExplorer plugin in Roblox Studio
+2. Open your VS Code workspace
+3. The extension will automatically start a WebSocket server
+4. Open Roblox Studio and run your game with the plugin
+5. The Roblox Explorer view should appear in VS Code
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+* `rblxexplorer.sourcemapPaths`: Array of paths to sourcemap files (relative to workspace root)
+* `rblxexplorer.port`: WebSocket server port (default: 9000)
+* `rblxexplorer.host`: WebSocket server host (default: localhost)
+* `rblxexplorer.autoStart`: Whether to start the server automatically (default: true)
 
-For example:
+## Usage
 
-This extension contributes the following settings:
+### Opening Scripts
+1. Double-click on any Script, LocalScript, or ModuleScript in the explorer
+2. The extension will look up the file path in your sourcemap
+3. The corresponding file will open in VS Code
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+### Instance Operations
+- Right-click instances for context menu options
+- Use keyboard shortcuts for quick operations:
+  - `F2`: Rename
+  - `Delete`: Delete
+  - `Ctrl+C`: Copy
+  - `Ctrl+V`: Paste
+  - `Ctrl+D`: Duplicate
+  - `Ctrl+Shift+A`: Add child
 
 ## Known Issues
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+- Script opening requires properly configured sourcemaps from Rojo/Azul
+- Only works with running Roblox games that have the companion plugin
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+### 0.0.1
+- Initial release
+- Basic instance tree viewing
+- Instance operations (rename, duplicate, delete, copy/paste)
+- Properties panel
+- Script opening with sourcemap support

@@ -38,8 +38,11 @@ exports.deactivate = deactivate;
 const vscode = __importStar(require("vscode"));
 const robloxExplorerProvider_1 = require("./robloxExplorerProvider");
 const backend_1 = require("./backend");
+const propertiesPanel_1 = require("./propertiesPanel");
 const robloxClasses_1 = require("./robloxClasses");
+const sourcemapParser_1 = require("./sourcemapParser");
 let backend = null;
+let sourcemapParser;
 async function activate(context) {
     console.log("RblxExplorer extension activated!");
     const outputChannel = vscode.window.createOutputChannel("RblxExplorer Backend");
@@ -47,6 +50,8 @@ async function activate(context) {
     context.subscriptions.push(outputChannel);
     context.subscriptions.push(statusBarItem);
     const explorerProvider = new robloxExplorerProvider_1.RobloxExplorerProvider(context.extensionUri);
+    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri || context.extensionUri;
+    sourcemapParser = new sourcemapParser_1.SourcemapParser(workspaceRoot);
     const explorerView = vscode.window.createTreeView("rblxexplorer.view", {
         treeDataProvider: explorerProvider,
         dragAndDropController: explorerProvider.getDragAndDropController(),
@@ -60,7 +65,32 @@ async function activate(context) {
     }, () => {
         explorerProvider.setSnapshot({ nodes: [], rootIds: [] });
     });
+    const watcher = vscode.workspace.createFileSystemWatcher('**/sourcemap.json');
+    watcher.onDidChange(() => sourcemapParser.loadSourcemaps());
+    watcher.onDidCreate(() => sourcemapParser.loadSourcemaps());
+    watcher.onDidDelete(() => sourcemapParser.loadSourcemaps());
+    context.subscriptions.push(watcher);
+    const propertiesPanel = new propertiesPanel_1.PropertiesPanel(backend, explorerView, context.extensionUri);
     explorerProvider.setBackend(backend);
+    explorerView.onDidChangeSelection((event) => {
+        const selection = event.selection;
+        if (selection.length === 1) {
+            const node = selection[0];
+            propertiesPanel.show(node.id);
+        }
+        else {
+            propertiesPanel.hide();
+        }
+    });
+    context.subscriptions.push(vscode.commands.registerCommand('rblxexplorer.navigateToInstance', async (instanceId) => {
+        const node = explorerProvider.getNodeById(instanceId);
+        if (node) {
+            await explorerView.reveal(node, { select: true, focus: true });
+        }
+        else {
+            vscode.window.showWarningMessage(`Instance ${instanceId} not found in explorer`);
+        }
+    }));
     context.subscriptions.push(vscode.commands.registerCommand("rblxexplorer.showOutput", () => {
         outputChannel.show(true);
     }));
@@ -313,6 +343,45 @@ async function activate(context) {
             vscode.window.showErrorMessage(`Failed to create instance: ${String(error)}`);
         }
     }));
+    context.subscriptions.push(vscode.commands.registerCommand("rblxexplorer.openScript", async (node) => {
+        if (!node) {
+            const treeSelections = explorerView.selection;
+            if (treeSelections && treeSelections.length > 0) {
+                node = treeSelections[0];
+            }
+        }
+        if (!node) {
+            vscode.window.showErrorMessage("No script selected");
+            return;
+        }
+        try {
+            await sourcemapParser.loadSourcemaps();
+            const instancePath = getInstancePath(node, explorerProvider);
+            const fileUri = sourcemapParser.findFilePath(instancePath);
+            if (fileUri) {
+                const document = await vscode.workspace.openTextDocument(fileUri);
+                await vscode.window.showTextDocument(document);
+            }
+            else {
+                vscode.window.showWarningMessage(`No sourcemap entry found for script: ${node.name}`);
+            }
+        }
+        catch (error) {
+            vscode.window.showErrorMessage(`Failed to open script: ${String(error)}`);
+        }
+    }));
+    function getInstancePath(node, provider) {
+        const path = [node.name];
+        let current = node;
+        while (current.parentId) {
+            const parent = provider.getNodeById(current.parentId);
+            if (!parent)
+                break;
+            path.unshift(parent.name);
+            current = parent;
+        }
+        return path;
+    }
     const config = vscode.workspace.getConfiguration("rblxexplorer");
     const autoStart = config.get("autoStart", true);
     if (autoStart) {

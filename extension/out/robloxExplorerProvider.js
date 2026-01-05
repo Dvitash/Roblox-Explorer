@@ -52,7 +52,7 @@ class RobloxExplorerDragAndDropController {
         }
         const sourceNodes = transferItem.value;
         if (sourceNodes.length !== 1) {
-            return; // Only support single node moves for now
+            return;
         }
         const sourceNode = sourceNodes[0];
         // Can't drop on self or descendants
@@ -107,14 +107,14 @@ class RobloxExplorerProvider {
     setBackend(backend) {
         this.backend = backend;
     }
+    getNodeById(id) {
+        return this.nodesById.get(id);
+    }
     async performOperation(operation) {
         if (!this.backend) {
             throw new Error("Backend not set");
         }
         return this.backend.sendOperation(operation);
-    }
-    getNodeById(id) {
-        return this.nodesById.get(id);
     }
     getDragAndDropController() {
         return new RobloxExplorerDragAndDropController(this);
@@ -135,6 +135,13 @@ class RobloxExplorerProvider {
         treeItem.id = element.id;
         treeItem.tooltip = `${element.name} (${element.className})`;
         treeItem.iconPath = this.getIconForClassName(element.className);
+        if (this.isScriptClass(element.className)) {
+            treeItem.command = {
+                command: 'rblxexplorer.openScript',
+                arguments: [element],
+                title: 'Open Script'
+            };
+        }
         return treeItem;
     }
     getChildren(element) {
@@ -149,6 +156,9 @@ class RobloxExplorerProvider {
     }
     getIconForClassName(className) {
         return vscode.Uri.joinPath(this.extensionUri, "media", `${className}@3x.png`);
+    }
+    isScriptClass(className) {
+        return className === "Script" || className === "LocalScript" || className === "ModuleScript";
     }
 }
 exports.RobloxExplorerProvider = RobloxExplorerProvider;

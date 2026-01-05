@@ -1,9 +1,12 @@
 import * as vscode from "vscode";
-import { RobloxExplorerProvider } from "./robloxExplorerProvider";
+import { RobloxExplorerProvider, Node } from "./robloxExplorerProvider";
 import { RblxExplorerBackend } from "./backend";
+import { PropertiesPanel } from "./propertiesPanel";
 import { ROBLOX_CLASS_NAMES } from "./robloxClasses";
+import { SourcemapParser } from "./sourcemapParser";
 
 let backend: RblxExplorerBackend | null = null;
+let sourcemapParser: SourcemapParser;
 
 export async function activate(context: vscode.ExtensionContext) {
 	console.log("RblxExplorer extension activated!");
@@ -14,6 +17,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(statusBarItem);
 
 	const explorerProvider = new RobloxExplorerProvider(context.extensionUri);
+	const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri || context.extensionUri;
+	sourcemapParser = new SourcemapParser(workspaceRoot);
 
 	const explorerView = vscode.window.createTreeView("rblxexplorer.view", {
 		treeDataProvider: explorerProvider,
@@ -32,7 +37,36 @@ export async function activate(context: vscode.ExtensionContext) {
 		explorerProvider.setSnapshot({ nodes: [], rootIds: [] });
 	});
 
+	const watcher = vscode.workspace.createFileSystemWatcher('**/sourcemap.json');
+	watcher.onDidChange(() => sourcemapParser.loadSourcemaps());
+	watcher.onDidCreate(() => sourcemapParser.loadSourcemaps());
+	watcher.onDidDelete(() => sourcemapParser.loadSourcemaps());
+	context.subscriptions.push(watcher);
+
+	const propertiesPanel = new PropertiesPanel(backend, explorerView, context.extensionUri);
+
 	explorerProvider.setBackend(backend);
+
+	explorerView.onDidChangeSelection((event) => {
+		const selection = event.selection;
+		if (selection.length === 1) {
+			const node = selection[0];
+			propertiesPanel.show(node.id);
+		} else {
+			propertiesPanel.hide();
+		}
+	});
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('rblxexplorer.navigateToInstance', async (instanceId: string) => {
+			const node = explorerProvider.getNodeById(instanceId);
+			if (node) {
+				await explorerView.reveal(node, { select: true, focus: true });
+			} else {
+				vscode.window.showWarningMessage(`Instance ${instanceId} not found in explorer`);
+			}
+		})
+	);
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("rblxexplorer.showOutput", () => {
@@ -338,6 +372,51 @@ export async function activate(context: vscode.ExtensionContext) {
 			}
 		})
 	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("rblxexplorer.openScript", async (node: Node) => {
+			if (!node) {
+				const treeSelections = explorerView.selection;
+				if (treeSelections && treeSelections.length > 0) {
+					node = treeSelections[0];
+				}
+			}
+
+			if (!node) {
+				vscode.window.showErrorMessage("No script selected");
+				return;
+			}
+
+			try {
+				await sourcemapParser.loadSourcemaps();
+				const instancePath = getInstancePath(node, explorerProvider);
+				const fileUri = sourcemapParser.findFilePath(instancePath);
+
+				if (fileUri) {
+					const document = await vscode.workspace.openTextDocument(fileUri);
+					await vscode.window.showTextDocument(document);
+				} else {
+					vscode.window.showWarningMessage(`No sourcemap entry found for script: ${node.name}`);
+				}
+			} catch (error) {
+				vscode.window.showErrorMessage(`Failed to open script: ${String(error)}`);
+			}
+		})
+	);
+
+	function getInstancePath(node: Node, provider: RobloxExplorerProvider): string[] {
+		const path: string[] = [node.name];
+		let current = node;
+
+		while (current.parentId) {
+			const parent = provider.getNodeById(current.parentId);
+			if (!parent) break;
+			path.unshift(parent.name);
+			current = parent;
+		}
+
+		return path;
+	}
 
 	const config = vscode.workspace.getConfiguration("rblxexplorer");
 	const autoStart = config.get<boolean>("autoStart", true);
