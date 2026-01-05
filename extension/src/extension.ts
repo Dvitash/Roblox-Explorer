@@ -37,7 +37,8 @@ export async function activate(context: vscode.ExtensionContext) {
 		explorerProvider.setSnapshot({ nodes: [], rootIds: [] });
 	});
 
-	const watcher = vscode.workspace.createFileSystemWatcher('**/sourcemap.json');
+	const sourcemapPath = vscode.workspace.getConfiguration('verde').get('sourcemapPath', 'sourcemap.json');
+	const watcher = vscode.workspace.createFileSystemWatcher(`**/${sourcemapPath}`);
 	watcher.onDidChange(() => sourcemapParser.loadSourcemaps());
 	watcher.onDidCreate(() => sourcemapParser.loadSourcemaps());
 	watcher.onDidDelete(() => sourcemapParser.loadSourcemaps());
