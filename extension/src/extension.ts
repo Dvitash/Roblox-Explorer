@@ -343,7 +343,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 			const quickPickItems = ROBLOX_CLASS_NAMES.map(className => ({
 				label: className,
-				iconPath: vscode.Uri.joinPath(context.extensionUri, "assets", `${className}@2x.png`)
+				iconPath: vscode.Uri.joinPath(context.extensionUri, "assets", `${className}.png`)
 			}));
 
 			const selectedItem = await vscode.window.showQuickPick(
