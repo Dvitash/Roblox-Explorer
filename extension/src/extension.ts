@@ -8,6 +8,12 @@ import { SourcemapParser } from "./sourcemapParser";
 let backend: VerdeBackend | null = null;
 let sourcemapParser: SourcemapParser;
 
+function isScriptClass(className: string): boolean {
+	return className === "Script" || className === "LocalScript" || className === "ModuleScript";
+}
+
+let scriptActivationTracker: { [nodeId: string]: { count: number, timeout: NodeJS.Timeout | null } } = {};
+
 export async function activate(context: vscode.ExtensionContext) {
 	console.log("Verde extension activated!");
 	const outputChannel = vscode.window.createOutputChannel("Verde Backend");
@@ -49,11 +55,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	explorerView.onDidChangeSelection((event) => {
 		const selection = event.selection;
+
 		if (selection.length === 1) {
 			const node = selection[0];
 			propertiesPanel.show(node.id);
-		} else {
-			propertiesPanel.hide();
 		}
 	});
 
@@ -374,6 +379,32 @@ export async function activate(context: vscode.ExtensionContext) {
 	);
 
 	context.subscriptions.push(
+		vscode.commands.registerCommand("verde.handleScriptActivation", async (node: Node) => {
+			const nodeId = node.id;
+
+			if (scriptActivationTracker[nodeId]?.timeout) {
+				clearTimeout(scriptActivationTracker[nodeId].timeout);
+			}
+
+			if (!scriptActivationTracker[nodeId]) {
+				scriptActivationTracker[nodeId] = { count: 0, timeout: null };
+			}
+
+			scriptActivationTracker[nodeId].count++;
+
+			scriptActivationTracker[nodeId].timeout = setTimeout(() => {
+				scriptActivationTracker[nodeId].count = 0;
+			}, 300);
+
+			if (scriptActivationTracker[nodeId].count === 2) {
+				console.log('Double-click detected, opening script');
+				await vscode.commands.executeCommand('verde.openScript', node);
+				scriptActivationTracker[nodeId].count = 0;
+			}
+		})
+	);
+
+	context.subscriptions.push(
 		vscode.commands.registerCommand("verde.openScript", async (node: Node) => {
 			if (!node) {
 				const treeSelections = explorerView.selection;
@@ -394,7 +425,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				if (fileUri) {
 					const document = await vscode.workspace.openTextDocument(fileUri);
-					await vscode.window.showTextDocument(document);
+					await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
 				} else {
 					vscode.window.showWarningMessage(`No sourcemap entry found for script: ${node.name}`);
 				}
@@ -410,7 +441,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
 		while (current.parentId) {
 			const parent = provider.getNodeById(current.parentId);
-			if (!parent) break;
+			if (!parent) {
+				break;
+			}
 			path.unshift(parent.name);
 			current = parent;
 		}

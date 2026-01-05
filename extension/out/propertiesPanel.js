@@ -529,7 +529,7 @@ class PropertiesPanel {
 					input.className = "value-input";
 
 					if (prop.value && typeof prop.value === "object") {
-						input.value = \`\${prop.value.X}, \${prop.value.Y}, \${prop.value.Z}\`;
+						input.value = \`\${prop.value.X.toFixed(3)}, \${prop.value.Y.toFixed(3)}, \${prop.value.Z.toFixed(3)}\`;
 					} else {
 						input.value = "0, 0, 0";
 					}
@@ -587,6 +587,31 @@ class PropertiesPanel {
 						const g = parseInt(input.value.slice(3, 5), 16) / 255;
 						const b = parseInt(input.value.slice(5, 7), 16) / 255;
 						postSetProperty(prop.name, { R: r, G: g, B: b });
+					});
+
+					return input;
+				}
+
+				case "CFrame": {
+					const input = document.createElement("input");
+					input.type = "text";
+					input.className = "value-input";
+					input.placeholder = "Position (X, Y, Z)";
+
+					if (prop.value && typeof prop.value === "object" && prop.value.Position) {
+						const pos = prop.value.Position;
+						if (pos.X !== undefined && pos.Y !== undefined && pos.Z !== undefined) {
+							input.value = \`\${pos.X.toFixed(3)}, \${pos.Y.toFixed(3)}, \${pos.Z.toFixed(3)}\`;
+						}
+					}
+
+					input.addEventListener("change", () => {
+						const parts = (input.value || "").split(",").map(s => parseFloat(s.trim()));
+						if (parts.length !== 3 || parts.some(n => !Number.isFinite(n))) return;
+						postSetProperty(prop.name, {
+							Position: { X: parts[0], Y: parts[1], Z: parts[2] },
+							Rotation: { X: 0, Y: 0, Z: 0 } // Default identity rotation
+						});
 					});
 
 					return input;

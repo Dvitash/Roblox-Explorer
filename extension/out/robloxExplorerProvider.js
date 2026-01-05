@@ -55,12 +55,10 @@ class RobloxExplorerDragAndDropController {
             return;
         }
         const sourceNode = sourceNodes[0];
-        // Can't drop on self or descendants
         if (target && this.isDescendantOf(target, sourceNode)) {
             vscode.window.showErrorMessage("Cannot move a node to one of its descendants");
             return;
         }
-        // Can't drop on self
         if (target && target.id === sourceNode.id) {
             return;
         }
@@ -137,28 +135,54 @@ class RobloxExplorerProvider {
         treeItem.iconPath = this.getIconForClassName(element.className);
         if (this.isScriptClass(element.className)) {
             treeItem.command = {
-                command: 'verde.openScript',
+                command: 'verde.handleScriptActivation',
                 arguments: [element],
-                title: 'Open Script'
+                title: 'Handle Script Activation'
             };
         }
         return treeItem;
     }
     getChildren(element) {
+        let nodes;
         if (!element) {
-            return this.rootIds
+            nodes = this.rootIds
                 .map((rootId) => this.nodesById.get(rootId))
                 .filter((node) => node !== undefined);
         }
-        return element.children
-            .map((childId) => this.nodesById.get(childId))
-            .filter((node) => node !== undefined);
+        else {
+            nodes = element.children
+                .map((childId) => this.nodesById.get(childId))
+                .filter((node) => node !== undefined);
+        }
+        return nodes.sort((a, b) => {
+            const aIsFolder = this.isFolderClass(a.className);
+            const bIsFolder = this.isFolderClass(b.className);
+            if (aIsFolder && !bIsFolder) {
+                return -1;
+            }
+            if (!aIsFolder && bIsFolder) {
+                return 1;
+            }
+            return a.name.localeCompare(b.name);
+        });
     }
     getIconForClassName(className) {
         return vscode.Uri.joinPath(this.extensionUri, "media", `${className}@3x.png`);
     }
     isScriptClass(className) {
         return className === "Script" || className === "LocalScript" || className === "ModuleScript";
+    }
+    isFolderClass(className) {
+        return className === "Folder" ||
+            className === "Model" ||
+            className === "Workspace" ||
+            className === "StarterPack" ||
+            className === "StarterGui" ||
+            className === "StarterPlayer" ||
+            className === "ReplicatedStorage" ||
+            className === "ReplicatedFirst" ||
+            className === "ServerStorage" ||
+            className === "ServerScriptService";
     }
 }
 exports.RobloxExplorerProvider = RobloxExplorerProvider;

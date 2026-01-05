@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "plugin"
+		},
+		{
+			"path": "extension"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {}
+}

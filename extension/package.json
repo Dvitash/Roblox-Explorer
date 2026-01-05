@@ -110,7 +110,7 @@
         "when": "focusedView == verde.view"
       },
       {
-        "command": "verde.renameInstance",
+        "command": "verde.openScript",
         "key": "enter",
         "when": "focusedView == verde.view"
       }

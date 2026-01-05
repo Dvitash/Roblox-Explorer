@@ -43,6 +43,10 @@ const robloxClasses_1 = require("./robloxClasses");
 const sourcemapParser_1 = require("./sourcemapParser");
 let backend = null;
 let sourcemapParser;
+function isScriptClass(className) {
+    return className === "Script" || className === "LocalScript" || className === "ModuleScript";
+}
+let scriptActivationTracker = {};
 async function activate(context) {
     console.log("Verde extension activated!");
     const outputChannel = vscode.window.createOutputChannel("Verde Backend");
@@ -343,6 +347,24 @@ async function activate(context) {
             vscode.window.showErrorMessage(`Failed to create instance: ${String(error)}`);
         }
     }));
+    context.subscriptions.push(vscode.commands.registerCommand("verde.handleScriptActivation", async (node) => {
+        const nodeId = node.id;
+        if (scriptActivationTracker[nodeId]?.timeout) {
+            clearTimeout(scriptActivationTracker[nodeId].timeout);
+        }
+        if (!scriptActivationTracker[nodeId]) {
+            scriptActivationTracker[nodeId] = { count: 0, timeout: null };
+        }
+        scriptActivationTracker[nodeId].count++;
+        scriptActivationTracker[nodeId].timeout = setTimeout(() => {
+            scriptActivationTracker[nodeId].count = 0;
+        }, 300);
+        if (scriptActivationTracker[nodeId].count === 2) {
+            console.log('Double-click detected, opening script');
+            await vscode.commands.executeCommand('verde.openScript', node);
+            scriptActivationTracker[nodeId].count = 0;
+        }
+    }));
     context.subscriptions.push(vscode.commands.registerCommand("verde.openScript", async (node) => {
         if (!node) {
             const treeSelections = explorerView.selection;
@@ -360,7 +382,7 @@ async function activate(context) {
             const fileUri = sourcemapParser.findFilePath(instancePath);
             if (fileUri) {
                 const document = await vscode.workspace.openTextDocument(fileUri);
-                await vscode.window.showTextDocument(document);
+                await vscode.window.showTextDocument(document, vscode.ViewColumn.One);
             }
             else {
                 vscode.window.showWarningMessage(`No sourcemap entry found for script: ${node.name}`);
@@ -375,8 +397,9 @@ async function activate(context) {
         let current = node;
         while (current.parentId) {
             const parent = provider.getNodeById(current.parentId);
-            if (!parent)
+            if (!parent) {
                 break;
+            }
             path.unshift(parent.name);
             current = parent;
         }

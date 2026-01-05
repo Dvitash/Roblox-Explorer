@@ -37,7 +37,7 @@ exports.SourcemapParser = void 0;
 const vscode = __importStar(require("vscode"));
 class SourcemapParser {
     workspaceRoot;
-    sourcemaps = new Map();
+    sourcemap = null;
     constructor(workspaceRoot) {
         this.workspaceRoot = workspaceRoot;
     }
@@ -49,18 +49,21 @@ class SourcemapParser {
             const content = await vscode.workspace.fs.readFile(uri);
             const sourcemap = JSON.parse(content.toString());
             const baseUri = vscode.Uri.joinPath(uri, '..');
-            this.sourcemaps.set(sourcemapPath, { node: sourcemap, baseUri });
+            this.sourcemap = { node: sourcemap, baseUri };
+            console.log(`Loaded sourcemap from ${sourcemapPath}`);
         }
         catch (error) {
             console.warn(`Failed to load sourcemap at ${sourcemapPath}:`, error);
+            this.sourcemap = null;
         }
     }
     findFilePath(instancePath) {
-        for (const [sourcemapPath, sourcemapData] of this.sourcemaps) {
-            const filePath = this.searchNode(sourcemapData.node, instancePath, 0);
-            if (filePath) {
-                return vscode.Uri.joinPath(sourcemapData.baseUri, filePath);
-            }
+        if (!this.sourcemap) {
+            return null;
+        }
+        const filePath = this.searchNode(this.sourcemap.node, instancePath, 0);
+        if (filePath) {
+            return vscode.Uri.joinPath(this.sourcemap.baseUri, filePath);
         }
         return null;
     }

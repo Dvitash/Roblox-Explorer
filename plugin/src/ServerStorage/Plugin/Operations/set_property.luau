@@ -37,6 +37,17 @@ return function(operation)
 					propertyValue.Y.Scale or 0,
 					propertyValue.Y.Offset or 0
 				)
+			elseif typeof(propertyValue.X) == "number" and typeof(propertyValue.Y) == "number" then
+				instance[propertyName] = Vector2.new(propertyValue.X, propertyValue.Y)
+			end
+		elseif typeof(propertyValue) == "table" and propertyValue.Scale ~= nil and propertyValue.Offset ~= nil then
+			instance[propertyName] = UDim.new(propertyValue.Scale, propertyValue.Offset)
+		elseif typeof(propertyValue) == "table" and propertyValue.Position ~= nil and propertyValue.Rotation ~= nil then
+			local pos = propertyValue.Position
+			local rot = propertyValue.Rotation
+			if pos.X and pos.Y and pos.Z then
+				instance[propertyName] = CFrame.new(pos.X, pos.Y, pos.Z)
+					* CFrame.Angles(rot.X or 0, rot.Y or 0, rot.Z or 0)
 			end
 		elseif
 			typeof(propertyValue) == "table"

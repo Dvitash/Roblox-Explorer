@@ -36,6 +36,71 @@ return function(operation)
 
 		local propType = property.ValueType and property.ValueType.Name or "Unknown"
 		local propValue = instance[property.Name]
+
+		-- Handle enum values specially
+		if property.ValueType and property.ValueType.Category == "Enum" and typeof(propValue) == "EnumItem" then
+			propValue = {
+				Value = propValue.Value,
+				Name = propValue.Name,
+			}
+		end
+
+		if typeof(propValue) == "CFrame" then
+			propValue = {
+				Position = {
+					X = math.round(propValue.Position.X * 1000) / 1000,
+					Y = math.round(propValue.Position.Y * 1000) / 1000,
+					Z = math.round(propValue.Position.Z * 1000) / 1000,
+				},
+				Rotation = {
+					X = propValue.LookVector.X,
+					Y = propValue.LookVector.Y,
+					Z = propValue.LookVector.Z,
+				},
+			}
+		elseif typeof(propValue) == "Vector3" then
+			propValue = {
+				X = math.round(propValue.X * 1000) / 1000,
+				Y = math.round(propValue.Y * 1000) / 1000,
+				Z = math.round(propValue.Z * 1000) / 1000,
+			}
+		elseif typeof(propValue) == "Vector2" then
+			propValue = {
+				X = propValue.X,
+				Y = propValue.Y,
+			}
+		elseif typeof(propValue) == "UDim2" then
+			propValue = {
+				X = {
+					Scale = propValue.X.Scale,
+					Offset = propValue.X.Offset,
+				},
+				Y = {
+					Scale = propValue.Y.Scale,
+					Offset = propValue.Y.Offset,
+				},
+			}
+		elseif typeof(propValue) == "UDim" then
+			propValue = {
+				Scale = propValue.Scale,
+				Offset = propValue.Offset,
+			}
+		elseif typeof(propValue) == "Color3" then
+			propValue = {
+				R = propValue.R,
+				G = propValue.G,
+				B = propValue.B,
+			}
+		elseif typeof(propValue) == "BrickColor" then
+			propValue = {
+				R = propValue.Color.R,
+				G = propValue.Color.G,
+				B = propValue.Color.B,
+				Name = propValue.Name,
+				Number = propValue.Number,
+			}
+		end
+
 		local enumValues = nil
 
 		if property.ValueType and property.ValueType.Category == "Enum" then
