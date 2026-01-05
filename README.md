@@ -1,6 +1,6 @@
 # Verde
 
-A VS Code extension that provides a tree view explorer for Roblox Studio instances
+A VS Code extension that provides a tree view explorer window
 
 ## Features
 
@@ -12,17 +12,17 @@ A VS Code extension that provides a tree view explorer for Roblox Studio instanc
 ## Requirements
 
 - Roblox Studio with the Verde plugin installed
-- A Rojo or Azul setup with sourcemap generation (for script opening functionality)
+- A Rojo/Argon/Azul setup with sourcemap generation (for script opening functionality)
 
 ## Installation
 
 ### From VSIX (Local Testing)
 1. Run `npm run package` in the extension directory to create a `.vsix` file
-2. In VS Code, open the Extensions view and click the "..." menu
+2. In VS Code, press Ctrl + Shift + P to open the command palette
 3. Select "Install from VSIX..." and choose the generated `.vsix` file
 
 ### From Marketplace (Coming Soon)
-Once published, install from the VS Code marketplace.
+nothing here yet
 
 ## Setup
 
@@ -34,16 +34,13 @@ Once published, install from the VS Code marketplace.
 
 ## Extension Settings
 
-* `verde.sourcemapPaths`: Array of paths to sourcemap files (relative to workspace root)
-* `verde.port`: WebSocket server port (default: 9000)
-* `verde.host`: WebSocket server host (default: localhost)
-* `verde.autoStart`: Whether to start the server automatically (default: true)
+* `verde.sourcemapPath`: Paths to the sourcemap file (relative to workspace root)
 
 ## Usage
 
 ### Opening Scripts
-1. Double-click on any Script, LocalScript, or ModuleScript in the explorer
-2. The extension will look up the file path in your sourcemap
+1. Click on any Script, LocalScript, or ModuleScript in the explorer
+2. The extension will look up the file path in your sourcemap (if it exists)
 3. The corresponding file will open in VS Code
 
 ### Instance Operations
@@ -54,18 +51,4 @@ Once published, install from the VS Code marketplace.
   - `Ctrl+C`: Copy
   - `Ctrl+V`: Paste
   - `Ctrl+D`: Duplicate
-  - `Ctrl+Shift+A`: Add child
-
-## Known Issues
-
-- Script opening requires properly configured sourcemaps from Rojo/Azul
-- Only works with running Roblox games that have the companion plugin
-
-## Release Notes
-
-### 0.0.1
-- Initial release
-- Basic instance tree viewing
-- Instance operations (rename, duplicate, delete, copy/paste)
-- Properties panel
-- Script opening with sourcemap support
+  - `Ctrl+Shift+A`: Open new instance panel
