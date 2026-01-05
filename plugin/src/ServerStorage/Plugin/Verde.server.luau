@@ -122,7 +122,6 @@ local function sendSnapshot()
 		return
 	end
 
-	local startTime = os.clock()
 	local snapshot, _instanceMap = SerializeDatamodel()
 
 	for id, instance in _instanceMap do
@@ -143,11 +142,7 @@ local function sendSnapshot()
 		return
 	end
 
-	local jsonSizeKB = math.floor(#jsonString / 1024)
-
 	local sendSuccess = client:send(jsonString)
-	local totalTime = os.clock() - startTime
-
 	if not sendSuccess then
 		print("failed to send snapshot")
 	end

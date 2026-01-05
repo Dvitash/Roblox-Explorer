@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Properties</title>
-    <link href="{{styleUri}}" rel="stylesheet">
+    <link href="[[styleUri]]" rel="stylesheet">
 </head>
 
 <body>
     <div class="root">
-        {{topbarHtml}}
+        [[topbarHtml]]
         <div id="scroller" class="scroller">
             <div id="properties-container"></div>
         </div>
@@ -23,7 +23,7 @@
         const collapsedCategories = new Set();
 
         const container = document.getElementById("properties-container");
-        { { scriptElements } }
+        [[scriptElements]]
 
         function updateProperties(message) {
             if (typeof message === 'object' && message.properties) {
@@ -53,7 +53,7 @@
         }
 
         function matchesFilter(prop) {
-            { { filterLogic } }
+            [[filterLogic]]
         }
 
         function render() {

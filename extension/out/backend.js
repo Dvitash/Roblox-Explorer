@@ -157,9 +157,10 @@ class VerdeBackend {
     }
     async setProperty(nodeId, propertyName, propertyValue) {
         const result = await this.sendOperation({ type: "set_property", nodeId, propertyName, propertyValue });
-        if (!result.success) {
-            throw new Error(result.error);
+        if (result.success && Array.isArray(result.data)) {
+            return result.data;
         }
+        throw new Error(result.success ? "No data returned" : result.error);
     }
     onMessage(socket, rawData) {
         const text = rawData.toString();

@@ -195,11 +195,12 @@ export class VerdeBackend {
         throw new Error(result.success ? "No data returned" : result.error);
     }
 
-    public async setProperty(nodeId: string, propertyName: string, propertyValue: any): Promise<void> {
+    public async setProperty(nodeId: string, propertyName: string, propertyValue: any): Promise<PropertyInfo[]> {
         const result = await this.sendOperation({ type: "set_property", nodeId, propertyName, propertyValue });
-        if (!result.success) {
-            throw new Error(result.error);
+        if (result.success && Array.isArray(result.data)) {
+            return result.data as PropertyInfo[];
         }
+        throw new Error(result.success ? "No data returned" : result.error);
     }
 
     private onMessage(socket: WebSocket, rawData: RawData): void {

@@ -25,10 +25,10 @@ export function getPropertiesHtml(extensionUri: vscode.Uri, options: PropertiesH
         let htmlContent = fs.readFileSync(htmlPath, 'utf8');
 
         const styleTag = `<style>${cssContent}</style>`;
-        htmlContent = htmlContent.replace('<link href="{{styleUri}}" rel="stylesheet">', styleTag);
-        htmlContent = htmlContent.replace('{{topbarHtml}}', getTopbarHtml(options));
-        htmlContent = htmlContent.replace('{{scriptElements}}', getScriptElements(options));
-        htmlContent = htmlContent.replace('{{filterLogic}}', getFilterLogic(options));
+        htmlContent = htmlContent.replace('<link href="[[styleUri]]" rel="stylesheet">', styleTag);
+        htmlContent = htmlContent.replace('[[topbarHtml]]', getTopbarHtml(options));
+        htmlContent = htmlContent.replace('[[scriptElements]]', getScriptElements(options));
+        htmlContent = htmlContent.replace('[[filterLogic]]', getFilterLogic(options));
 
         return htmlContent;
     } catch (error) {

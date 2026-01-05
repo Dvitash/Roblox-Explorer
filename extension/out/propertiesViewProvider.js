@@ -77,7 +77,7 @@ class PropertiesViewProvider {
         this.currentNodeName = node.name;
         this.currentNodeClassName = node.className;
         if (this.isUsingSeparatePanel && this.separatePanel) {
-            this.separatePanel.title = `Properties - ${this.currentNodeClassName} "${this.currentNodeName}"`;
+            this.separatePanel.title = `Properties - ${this.currentNodeClassName} - ${this.currentNodeName}`;
             this.loadPropertiesForPanel(this.separatePanel.webview);
         }
         else if (this.webviewView) {
@@ -115,7 +115,13 @@ class PropertiesViewProvider {
         }
         if (this.currentNodeId && message.type === "setProperty") {
             try {
-                await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+                const properties = await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+                this.webviewView.webview.postMessage({
+                    type: "updateProperties",
+                    properties,
+                    nodeName: this.currentNodeName,
+                    nodeClassName: this.currentNodeClassName,
+                });
             }
             catch (error) {
                 vscode.window.showErrorMessage(`Failed to update property: ${error}`);
@@ -145,7 +151,7 @@ class PropertiesViewProvider {
         if (this.webviewView) {
             this.webviewView.webview.html = '';
         }
-        const panel = vscode.window.createWebviewPanel("verde.properties.panel", `Properties - ${this.currentNodeClassName || "Unknown"} "${this.currentNodeName || "No Selection"}"`, vscode.ViewColumn.Beside, {
+        const panel = vscode.window.createWebviewPanel("verde.properties.panel", `Properties - ${this.currentNodeClassName || "Unknown"} - ${this.currentNodeName || "No Selection"}`, vscode.ViewColumn.Beside, {
             enableScripts: true,
             localResourceRoots: [
                 vscode.Uri.joinPath(this.extensionUri, "assets"),
@@ -167,7 +173,13 @@ class PropertiesViewProvider {
             }
             if (this.currentNodeId && message.type === "setProperty") {
                 try {
-                    await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+                    const properties = await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+                    panel.webview.postMessage({
+                        type: "updateProperties",
+                        properties,
+                        nodeName: this.currentNodeName,
+                        nodeClassName: this.currentNodeClassName,
+                    });
                 }
                 catch (error) {
                     vscode.window.showErrorMessage(`Failed to update property: ${error}`);

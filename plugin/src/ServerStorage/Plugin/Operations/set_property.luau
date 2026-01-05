@@ -1,4 +1,5 @@
 local InstanceMap = require(script.Parent.Parent.Shared.InstanceMap)
+local getProperties = require(script.Parent.get_properties)
 
 return function(operation)
 	local nodeId = operation.nodeId
@@ -55,13 +56,15 @@ return function(operation)
 			and propertyValue.G ~= nil
 			and propertyValue.B ~= nil
 		then
-			-- Handle Color3
 			instance[propertyName] = Color3.new(propertyValue.R, propertyValue.G, propertyValue.B)
 		else
-			-- Handle other values normally
 			instance[propertyName] = propertyValue
 		end
 	end)
 
-	return success
+	if success then
+		return getProperties({ nodeId = operation.nodeId })
+	else
+		return false
+	end
 end

@@ -73,6 +73,7 @@ export class PropertiesViewProvider implements vscode.WebviewViewProvider {
 
 		try {
 			const properties = await this.backend.getProperties(this.currentNodeId);
+
 			this.webviewView.webview.postMessage({
 				type: "updateProperties",
 				properties,
@@ -98,7 +99,13 @@ export class PropertiesViewProvider implements vscode.WebviewViewProvider {
 
 		if (this.currentNodeId && message.type === "setProperty") {
 			try {
-				await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+				const properties = await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+				this.webviewView!.webview.postMessage({
+					type: "updateProperties",
+					properties,
+					nodeName: this.currentNodeName,
+					nodeClassName: this.currentNodeClassName,
+				});
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to update property: ${error}`);
 			}
@@ -161,7 +168,13 @@ export class PropertiesViewProvider implements vscode.WebviewViewProvider {
 
 			if (this.currentNodeId && message.type === "setProperty") {
 				try {
-					await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+					const properties = await this.backend.setProperty(this.currentNodeId, message.propertyName, message.propertyValue);
+					panel.webview.postMessage({
+						type: "updateProperties",
+						properties,
+						nodeName: this.currentNodeName,
+						nodeClassName: this.currentNodeClassName,
+					});
 				} catch (error) {
 					vscode.window.showErrorMessage(`Failed to update property: ${error}`);
 				}
