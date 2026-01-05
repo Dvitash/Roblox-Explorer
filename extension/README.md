@@ -34,7 +34,10 @@ A VS Code extension that provides a tree view explorer window
 
 ## Extension Settings
 
-* `verde.sourcemapPath`: Paths to the sourcemap file (relative to workspace root)
+* `verde.sourcemapPath`: Path to sourcemap file (relative to workspace root) - defaults to "sourcemap.json"
+* `verde.port`: Port for the WebSocket server - defaults to 9000  
+* `verde.host`: Host IP address for the WebSocket server - defaults to "localhost"
+* `verde.autoStart`: Automatically start the server when the extension activates - defaults to true
 
 ## Usage
 
@@ -46,7 +49,7 @@ A VS Code extension that provides a tree view explorer window
 ### Instance Operations
 - Right-click instances for context menu options
 - Use keyboard shortcuts for quick operations:
-  - `F2`: Rename
+  - `Enter`: Rename
   - `Delete`: Delete
   - `Ctrl+C`: Copy
   - `Ctrl+V`: Paste
