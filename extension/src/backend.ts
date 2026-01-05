@@ -86,10 +86,10 @@ export class VerdeBackend {
 
         const config = vscode.workspace.getConfiguration("verde");
         const port = config.get<number>("port", 9000);
-        const hostSetting = (config.get<string>("host", "") || "").trim();
-        const host = hostSetting.length > 0 ? hostSetting : undefined;
+        const hostSetting = config.get<string>("host", "localhost");
+        const host = hostSetting;
 
-        this.log(`starting websocket server on ws://${host ?? "0.0.0.0"}:${port}`);
+        this.log(`starting websocket server on ws://${host}:${port}`);
 
         try {
             this.webSocketServer = new WebSocketServer(host ? { host, port } : { port });

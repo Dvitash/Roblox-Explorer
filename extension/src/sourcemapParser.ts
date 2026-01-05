@@ -14,7 +14,7 @@ export class SourcemapParser {
 
     async loadSourcemaps(): Promise<void> {
         const config = vscode.workspace.getConfiguration('verde');
-        const sourcemapPath = config.get<string>('sourcemapPath', 'plugin/sourcemap.json');
+        const sourcemapPath = config.get<string>('sourcemapPath', 'sourcemap.json');
 
         try {
             const uri = vscode.Uri.joinPath(this.workspaceRoot, sourcemapPath);

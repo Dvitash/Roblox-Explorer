@@ -25,6 +25,21 @@
           "type": "string",
           "default": "sourcemap.json",
           "description": "Path to sourcemap file"
+        },
+        "verde.port": {
+          "type": "number",
+          "default": 9000,
+          "description": "Port for the WebSocket server"
+        },
+        "verde.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "Host IP address for the WebSocket server"
+        },
+        "verde.autoStart": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically start the server when the extension activates"
         }
       }
     },
