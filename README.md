@@ -14,19 +14,19 @@ A VS Code extension that provides a tree view explorer window
 - Roblox Studio with the Verde plugin installed
 - A Rojo/Argon/Azul setup with sourcemap generation (for script opening functionality)
 
-## Installation
+## Extension Installation
 
 ### From VSIX (Local Testing)
 1. Run `npm run package` in the extension directory to create a `.vsix` file
 2. In VS Code, press Ctrl + Shift + P to open the command palette
 3. Select "Install from VSIX..." and choose the generated `.vsix` file
 
-### From Marketplace (Coming Soon)
-nothing here yet
+### Online
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Dvitash.verde)
 
 ## Setup
 
-1. Install the Verde plugin in Roblox Studio
+1. Install the [Verde plugin](https://create.roblox.com/store/asset/84296161836385) in Roblox Studio
 2. Open your VS Code workspace
 3. The extension will automatically start a WebSocket server
 4. Open Roblox Studio and run your game with the plugin
