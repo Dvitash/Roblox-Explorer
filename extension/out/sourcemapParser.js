@@ -43,18 +43,16 @@ class SourcemapParser {
     }
     async loadSourcemaps() {
         const config = vscode.workspace.getConfiguration('verde');
-        const sourcemapPaths = config.get('sourcemapPaths', ['plugin/sourcemap.json']);
-        for (const path of sourcemapPaths) {
-            try {
-                const uri = vscode.Uri.joinPath(this.workspaceRoot, path);
-                const content = await vscode.workspace.fs.readFile(uri);
-                const sourcemap = JSON.parse(content.toString());
-                const baseUri = vscode.Uri.joinPath(uri, '..');
-                this.sourcemaps.set(path, { node: sourcemap, baseUri });
-            }
-            catch (error) {
-                console.warn(`Failed to load sourcemap at ${path}:`, error);
-            }
+        const sourcemapPath = config.get('sourcemapPath', 'plugin/sourcemap.json');
+        try {
+            const uri = vscode.Uri.joinPath(this.workspaceRoot, sourcemapPath);
+            const content = await vscode.workspace.fs.readFile(uri);
+            const sourcemap = JSON.parse(content.toString());
+            const baseUri = vscode.Uri.joinPath(uri, '..');
+            this.sourcemaps.set(sourcemapPath, { node: sourcemap, baseUri });
+        }
+        catch (error) {
+            console.warn(`Failed to load sourcemap at ${sourcemapPath}:`, error);
         }
     }
     findFilePath(instancePath) {
