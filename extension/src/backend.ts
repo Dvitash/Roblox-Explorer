@@ -14,7 +14,7 @@ export type Operation =
     | { type: "set_property"; nodeId: string; propertyName: string; propertyValue: any }
 
 export type OperationResult =
-    | { success: true; data?: string | PropertyInfo[] }
+    | { success: true; data?: string | PropertyInfo[] | boolean }
     | { success: false; error: string };
 
 export type PropertyInfo = {
@@ -59,6 +59,8 @@ export class VerdeBackend {
     private operationCallbacks: Map<string, (result: OperationResult) => void> = new Map();
     private lastAckTime: number = 0;
     private ackTimeout: NodeJS.Timeout | null = null;
+    private nextSnapshotPromise: Promise<Snapshot> | null = null;
+    private nextSnapshotResolve: ((snapshot: Snapshot) => void) | null = null;
 
     constructor(
         outputChannel: vscode.OutputChannel,
@@ -203,6 +205,18 @@ export class VerdeBackend {
         throw new Error(result.success ? "No data returned" : result.error);
     }
 
+    public async waitForNextSnapshot(): Promise<Snapshot> {
+        if (this.nextSnapshotPromise) {
+            return this.nextSnapshotPromise;
+        }
+
+        this.nextSnapshotPromise = new Promise((resolve) => {
+            this.nextSnapshotResolve = resolve;
+        });
+
+        return this.nextSnapshotPromise;
+    }
+
     private onMessage(socket: WebSocket, rawData: RawData): void {
         const text = rawData.toString();
 
@@ -233,6 +247,12 @@ export class VerdeBackend {
 
                 this.log(`received explorer snapshot (${payload.nodes.length} nodes)`);
                 this.onSnapshotReceived(payload);
+
+                if (this.nextSnapshotResolve) {
+                    this.nextSnapshotResolve(payload);
+                    this.nextSnapshotPromise = null;
+                    this.nextSnapshotResolve = null;
+                }
 
                 this.send(socket, { type: "ack", requestId: message.requestId });
                 return;

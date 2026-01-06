@@ -421,6 +421,18 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				if (!result.success) {
 					vscode.window.showErrorMessage(`Failed to create instance: ${result.error}`);
+				} else {
+					// Wait for the snapshot to update with the new instance
+					await backend.waitForNextSnapshot();
+
+					// The result.data contains the ID of the newly created instance
+					if (result.data && typeof result.data === 'string') {
+						const newNodeId = result.data;
+						const newNode = explorerProvider.getNodeById(newNodeId);
+						if (newNode) {
+							await explorerView.reveal(newNode, { select: true, focus: true });
+						}
+					}
 				}
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to create instance: ${String(error)}`);
