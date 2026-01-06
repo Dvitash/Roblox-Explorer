@@ -71,55 +71,55 @@
     "commands": [
       {
         "command": "verde.showOutput",
-        "title": "Show Output"
+        "title": "Verde: Show Output"
       },
       {
         "command": "verde.renameInstance",
-        "title": "Rename"
+        "title": "Verde: Rename Instance"
       },
       {
         "command": "verde.duplicateInstance",
-        "title": "Duplicate"
+        "title": "Verde: Duplicate Instance"
       },
       {
         "command": "verde.deleteInstance",
-        "title": "Delete"
+        "title": "Verde: Delete Instance"
       },
       {
         "command": "verde.copyInstance",
-        "title": "Copy"
+        "title": "Verde: Copy Instance"
       },
       {
         "command": "verde.pasteInstance",
-        "title": "Paste"
+        "title": "Verde: Paste Instance"
       },
       {
         "command": "verde.addInstance",
-        "title": "Add Child..."
+        "title": "Verde: Add Child..."
       },
       {
         "command": "verde.openScript",
-        "title": "Open Script"
+        "title": "Verde: Open Script"
       },
       {
         "command": "verde.copyRobloxPath",
-        "title": "Copy Roblox Path"
+        "title": "Verde: Copy Roblox Path"
       },
       {
         "command": "verde.copyFilePath",
-        "title": "Copy File Path"
+        "title": "Verde: Copy File Path"
       },
       {
         "command": "verde.startServer",
-        "title": "Start Server"
+        "title": "Verde: Start Server"
       },
       {
         "command": "verde.stopServer",
-        "title": "Stop Server"
+        "title": "Verde: Stop Server"
       },
       {
         "command": "verde.togglePropertiesPanelMode",
-        "title": "Toggle Properties Panel Mode"
+        "title": "Verde: Toggle Properties Panel Mode"
       }
     ],
     "keybindings": [
