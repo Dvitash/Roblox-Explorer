@@ -191,6 +191,16 @@ export async function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
+			const oldName = node.name;
+			const isScript = isScriptClass(node.className);
+
+			let oldFileUri: vscode.Uri | null = null;
+			if (isScript) {
+				await sourcemapParser.loadSourcemaps();
+				const oldInstancePath = getInstancePath(node, explorerProvider);
+				oldFileUri = sourcemapParser.findFilePath(oldInstancePath);
+			}
+
 			try {
 				const result = await backend.sendOperation({
 					type: "rename_instance",
@@ -200,6 +210,31 @@ export async function activate(context: vscode.ExtensionContext) {
 
 				if (!result.success) {
 					vscode.window.showErrorMessage(`Failed to rename instance: ${result.error}`);
+				} else if (isScript) {
+					await backend.waitForNextSnapshot();
+					await sourcemapParser.loadSourcemaps();
+					const updatedNode = explorerProvider.getNodeById(node.id);
+
+					if (updatedNode) {
+						if (oldFileUri) {
+							const tabs = vscode.window.tabGroups.all.flatMap(tg => tg.tabs);
+							const tabToClose = tabs.find(tab => tab.input instanceof vscode.TabInputText && tab.input.uri.toString() === oldFileUri.toString());
+							if (tabToClose) {
+								await vscode.window.tabGroups.close(tabToClose);
+							}
+						}
+
+						const newInstancePath = getInstancePath(updatedNode, explorerProvider);
+						const newFileUri = sourcemapParser.findFilePath(newInstancePath);
+
+						if (newFileUri) {
+							const document = await vscode.workspace.openTextDocument(newFileUri);
+							await vscode.window.showTextDocument(document, {
+								viewColumn: vscode.ViewColumn.One,
+								preview: false
+							});
+						}
+					}
 				}
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to rename instance: ${String(error)}`);
@@ -281,6 +316,17 @@ export async function activate(context: vscode.ExtensionContext) {
 			try {
 				let successCount = 0;
 				let lastError = null;
+				const scriptFileUris: vscode.Uri[] = [];
+
+				for (const node of nodes) {
+					if (isScriptClass(node.className)) {
+						const instancePath = getInstancePath(node, explorerProvider);
+						const fileUri = sourcemapParser.findFilePath(instancePath);
+						if (fileUri) {
+							scriptFileUris.push(fileUri);
+						}
+					}
+				}
 
 				for (const node of nodes) {
 					const result = await backend.sendOperation({
@@ -299,6 +345,13 @@ export async function activate(context: vscode.ExtensionContext) {
 					vscode.window.showWarningMessage(
 						`Deleted ${successCount}/${nodes.length} instances. Last error: ${lastError}`
 					);
+				}
+
+				for (const fileUri of scriptFileUris) {
+					const document = vscode.workspace.textDocuments.find(doc => doc.uri.toString() === fileUri.toString());
+					if (document) {
+						await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+					}
 				}
 			} catch (error) {
 				vscode.window.showErrorMessage(`Failed to delete instances: ${String(error)}`);
