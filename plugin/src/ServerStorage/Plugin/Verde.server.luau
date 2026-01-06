@@ -8,12 +8,15 @@
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
-local SerializeDatamodel = require(script.Parent.SerializeDatamodel)
-local WebSocketClient = require(script.Parent.WebSocketClient)
-local InstanceMap = require(script.Parent.Shared.InstanceMap)
-local Promise = require(script.Parent.Packages.Promise)
-local Services = require(script.Parent.Shared.Services)
-local print = require(script.Parent.Utils.print)
+local Verde = script.Parent
+
+local SerializeDatamodel = require(Verde.SerializeDatamodel)
+local isValidInstance = require(Verde.Utils.isValidInstance)
+local WebSocketClient = require(Verde.WebSocketClient)
+local InstanceMap = require(Verde.Shared.InstanceMap)
+local Promise = require(Verde.Packages.Promise)
+local Services = require(Verde.Shared.Services)
+local print = require(Verde.Utils.print)
 
 if RunService:IsRunning() then
 	return
@@ -39,7 +42,6 @@ local STATES = {
 
 local PROPERTIES_TO_WATCH = {
 	"Name",
-	"Parent",
 }
 
 local pluginToolbar = plugin:CreateToolbar(PLUGIN_NAME)
@@ -99,7 +101,7 @@ local connectionEnabled = false
 
 local operations: { [string]: (...any) -> boolean } = {}
 
-for _, operationMod in script.Parent.Operations:GetChildren() do
+for _, operationMod in Verde.Operations:GetChildren() do
 	local operation = require(operationMod)
 	operations[operationMod.Name] = operation
 end
@@ -142,10 +144,9 @@ local function sendSnapshot()
 		return
 	end
 
-	local sendSuccess = client:send(jsonString)
-	if not sendSuccess then
-		print("failed to send snapshot")
-	end
+	print("snapshot sent")
+
+	assert(client:send(jsonString), "failed to send snapshot")
 end
 
 local function queueSnapshot()
@@ -167,7 +168,6 @@ local function disconnect()
 		snapshotPromise:cancel()
 		snapshotPromise = nil
 	end
-
 	if client then
 		client:disconnect()
 		client = nil
@@ -280,8 +280,6 @@ local function ensureClient(): boolean
 			setButtonState()
 
 			startAckLoop()
-
-			task.defer(sendSnapshot)
 		end
 	end)
 
@@ -339,6 +337,10 @@ local function setEnabled(enabled: boolean)
 	table.insert(
 		connections,
 		game.DescendantAdded:Connect(function(descendant)
+			if not isValidInstance(descendant) then
+				return
+			end
+
 			listenToChanges(descendant)
 			queueSnapshot()
 		end)
@@ -347,6 +349,13 @@ local function setEnabled(enabled: boolean)
 	table.insert(
 		connections,
 		game.DescendantRemoving:Connect(function(descendant)
+			local instanceId = descendant:GetDebugId(0)
+			if not InstanceMap[instanceId] then
+				return
+			end
+
+			InstanceMap[instanceId] = nil
+
 			queueSnapshot()
 		end)
 	)
