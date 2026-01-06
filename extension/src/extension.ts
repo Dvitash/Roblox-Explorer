@@ -100,7 +100,10 @@ export async function activate(context: vscode.ExtensionContext) {
 				if (instancePath) {
 					const node = explorerProvider.getNodeByInstancePath(instancePath);
 					if (node) {
-						await explorerView.reveal(node, { select: true, focus: true });
+						await explorerView.reveal(node, { select: true, focus: false });
+
+						// force-refocus the text editor
+						await vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
 					}
 				}
 			} catch (error) {
@@ -113,7 +116,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('verde.navigateToInstance', async (instanceId: string) => {
 			const node = explorerProvider.getNodeById(instanceId);
 			if (node) {
-				await explorerView.reveal(node, { select: true, focus: true });
+				await explorerView.reveal(node, { select: true, focus: false });
 			} else {
 				vscode.window.showWarningMessage(`Instance ${instanceId} not found in explorer`);
 			}
