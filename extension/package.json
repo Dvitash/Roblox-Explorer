@@ -102,6 +102,14 @@
         "title": "Open Script"
       },
       {
+        "command": "verde.copyRobloxPath",
+        "title": "Copy Roblox Path"
+      },
+      {
+        "command": "verde.copyFilePath",
+        "title": "Copy File Path"
+      },
+      {
         "command": "verde.startServer",
         "title": "Start Server"
       },
@@ -196,6 +204,16 @@
           "command": "verde.addInstance",
           "when": "view == verde.view",
           "group": "7_modification"
+        },
+        {
+          "command": "verde.copyRobloxPath",
+          "when": "view == verde.view",
+          "group": "8_copy"
+        },
+        {
+          "command": "verde.copyFilePath",
+          "when": "view == verde.view && viewItem == script",
+          "group": "8_copy"
         }
       ]
     }

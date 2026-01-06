@@ -112,11 +112,14 @@ export class RobloxExplorerProvider implements vscode.TreeDataProvider<Node> {
 		treeItem.iconPath = this.getIconForClassName(element.className);
 
 		if (isScriptClass(element.className)) {
+			treeItem.contextValue = 'script';
 			treeItem.command = {
 				command: 'verde.handleScriptActivation',
 				arguments: [element],
 				title: 'Handle Script Activation'
 			};
+		} else {
+			treeItem.contextValue = 'instance';
 		}
 
 		return treeItem;

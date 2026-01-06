@@ -515,6 +515,65 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	context.subscriptions.push(
+		vscode.commands.registerCommand("verde.copyRobloxPath", async (node: Node) => {
+			if (!node) {
+				const treeSelections = explorerView.selection;
+				if (treeSelections && treeSelections.length > 0) {
+					node = treeSelections[0];
+				}
+			}
+
+			if (!node) {
+				vscode.window.showErrorMessage("No instance selected");
+				return;
+			}
+
+			try {
+				const robloxPath = getInstancePath(node, explorerProvider).join(".");
+				await vscode.env.clipboard.writeText(robloxPath);
+			} catch (error) {
+				vscode.window.showErrorMessage(`Failed to copy Roblox path: ${String(error)}`);
+			}
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand("verde.copyFilePath", async (node: Node) => {
+			if (!node) {
+				const treeSelections = explorerView.selection;
+				if (treeSelections && treeSelections.length > 0) {
+					node = treeSelections[0];
+				}
+			}
+
+			if (!node) {
+				vscode.window.showErrorMessage("No instance selected");
+				return;
+			}
+
+			if (!isScriptClass(node.className)) {
+				vscode.window.showErrorMessage("Selected instance is not a script");
+				return;
+			}
+
+			try {
+				await sourcemapParser.loadSourcemaps();
+				const instancePath = getInstancePath(node, explorerProvider);
+				const fileUri = sourcemapParser.findFilePath(instancePath);
+
+				if (fileUri) {
+					const filePath = vscode.workspace.asRelativePath(fileUri);
+					await vscode.env.clipboard.writeText(filePath);
+				} else {
+					vscode.window.showErrorMessage(`No file path found for script: ${node.name}`);
+				}
+			} catch (error) {
+				vscode.window.showErrorMessage(`Failed to copy file path: ${String(error)}`);
+			}
+		})
+	);
+
 	function getInstancePath(node: Node, provider: RobloxExplorerProvider): string[] {
 		const path: string[] = [node.name];
 		let current = node;
