@@ -1,4 +1,5 @@
 local InstanceMap = require(script.Parent.Parent.Shared.InstanceMap)
+local PropertyTracker = require(script.Parent.Parent.Shared.PropertyTracker)
 
 return function(operation)
 	local nodeId = operation.nodeId
@@ -29,5 +30,6 @@ return function(operation)
 	instance:SetAttribute(newName, currentValue)
 	instance:SetAttribute(oldName, nil)
 
+	PropertyTracker.triggerUpdate(nodeId)
 	return true
 end

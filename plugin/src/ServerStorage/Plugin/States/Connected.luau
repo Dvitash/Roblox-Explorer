@@ -163,10 +163,6 @@ local function _handleOperation(client: Client, operationId: string, operation: 
 		local errorMessage = if success then nil else (errorMsg or "operation_failed")
 
 		_sendOperationResult(client, operationId, success, errorMessage, data)
-
-		if success then
-			_queueSnapshot(client)
-		end
 	else
 		_sendOperationResult(client, operationId, false, "unknown_operation_type: " .. operation.type)
 	end
@@ -222,7 +218,7 @@ local function _listenToChanges(client: Client, descendant: Instance)
 
 		table.insert(
 			connections,
-			descendant.AttributeChanged:Connect(function()
+			descendant.AncestryChanged:Connect(function()
 				_queueSnapshot(client)
 			end)
 		)
