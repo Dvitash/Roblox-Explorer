@@ -9,6 +9,8 @@ local UNSAFE_PROPERTIES = {
 	Parent = true,
 	ClassName = true,
 	Disabled = true,
+	Source = true,
+	LinkedSource = true,
 }
 
 return function(operation)
