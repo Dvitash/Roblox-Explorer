@@ -33,8 +33,9 @@ Verde can be used either with a dedicated sync tool (Like Rojo/Argon/Azul) or wi
 3. Select "Install from VSIX..." and choose the generated `.vsix` file
 
 ### Online
-
 [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Dvitash.verde)
+
+[OpenVSX Registry](https://open-vsx.org/extension/Dvitash/verde)
 
 ## Setup
 
